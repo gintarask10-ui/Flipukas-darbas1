@@ -971,8 +971,11 @@
 const STORE_KEY = 'flipuks_registrations_v1';
 const ADMIN_PASSWORD = 'flipuks2026';
 const CONTACT_EMAIL = 'flipukas.eu@gmail.com';
-const LAUNCH_DATE = new Date('2026-03-01T12:00:00Z');  /* <-- change the launch date here */
-const BASE_REGISTERED = 2847;                           /* social-proof baseline offset */
+const LAUNCH_DATE = new Date('2026-03-01T12:00:00Z');
+const BASE_REGISTERED = 2847;
+
+// Brevo formos nuoroda
+const BREVO_FORM_URL = 'https://ad66b8b5.sibforms.com/serve/MUIFACOfRTPc6oarHdw5LXNpxHsXIv-mm9Ryc3HElYsUUbgkTHCuyboSnZ-tPzBTmP8dee_Hbgx-zo8eQPyRzHvIDx0x9gTdNxTlGnTbRTKeOfGjzifB2_1tlpBV0XSuOQrtsn8yG3hXqnDS_jjqgMONEsMKl-Gnrp7QLqDnxx7Kz-lCfbKYTgCRuJHRHN4DKHIctKvX5GEdp9dKJg==';
 
 const $ = (id) => document.getElementById(id);
 const STAR_P4 = 'M12 0 C13.1 6.9 17.1 10.9 24 12 C17.1 13.1 13.1 17.1 12 24 C10.9 17.1 6.9 13.1 0 12 C6.9 10.9 10.9 6.9 12 0 Z';
@@ -1068,7 +1071,7 @@ if (brandLetters.length) setTimeout(brandLoop, 900);
   if ($('tickerB')) $('tickerB').innerHTML = html;
 })();
 
-/* ---------- Live visitors: real sample x4 ---------- */
+/* ---------- Live visitors ---------- */
 const App = { realVisitors: 4 + Math.floor(Math.random() * 5), multiplier: 4 };
 const liveCountEl = $('liveCount'), viewersCountEl = $('viewersCount'), stickyCountEl = $('stickyCount');
 let displayCount = 0;
@@ -1316,9 +1319,21 @@ form.addEventListener('submit', e => {
     return;
   }
 
+  // 1. Išsaugome naršyklėje vietinei Admin panelei
   addReg({ email, phone: phone || '—', at: new Date().toISOString() });
   paintRegistered();
   sessionStorage.setItem('flipuks_registered', '1');
+
+  // 2. Siunčiame duomenis į Brevo
+  const formData = new FormData();
+  formData.append('EMAIL', email);
+  if (phone) formData.append('SMS', phone);
+
+  fetch(BREVO_FORM_URL, {
+    method: 'POST',
+    body: formData,
+    mode: 'no-cors'
+  }).catch(err => console.log('Brevo error:', err));
 
   submitBtn.innerHTML = '<i data-lucide="check" class="h-4 w-4"></i><span>VIP Access Secured</span>';
   if (window.lucide) lucide.createIcons();
@@ -1348,7 +1363,7 @@ $('copyCode').addEventListener('click', function () {
   else done();
 });
 
-/* ---------- Exit-intent offer (once per session) ---------- */
+/* ---------- Exit-intent offer ---------- */
 let exitShown = false;
 function maybeExitIntent(e) {
   if (exitShown) return;
@@ -1444,10 +1459,8 @@ $('exportCsv').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-/* ---------- Contact email consistency ---------- */
 [$('mailLink')].forEach(a => { if (a) a.href = 'mailto:' + CONTACT_EMAIL; });
 
-/* ---------- Init ---------- */
 paintRegistered();
 if (window.lucide) lucide.createIcons();
 </script>
